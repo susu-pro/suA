@@ -1,0 +1,323 @@
+/* ===== 组件样式 ===== */
+/* 下拉框 */
+select {
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+    background-color: white;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--text-primary);
+    cursor: pointer;
+    min-width: 120px;
+    outline: none;
+    transition: border-color 0.3s;
+  }
+  
+  select:hover {
+    border-color: #bdbdbd;
+  }
+  
+  select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(26, 35, 126, 0.1);
+  }
+  
+  button {
+    font-family: inherit;
+    outline: none;
+  }
+  
+  /* 滑块 */
+  input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 6px;
+    background: #e0e0e0;
+    border-radius: 3px;
+    outline: none;
+  }
+  
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    background: var(--primary-color);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  
+  input[type="range"]::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: var(--primary-color);
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+    transition: background 0.3s;
+  }
+  
+  input[type="range"]::-webkit-slider-thumb:hover {
+    background: var(--secondary-color);
+  }
+  
+  input[type="range"]::-moz-range-thumb:hover {
+    background: var(--secondary-color);
+  }
+  
+  input[type="range"]::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 6px;
+    cursor: pointer;
+    background: #e0e0e0;
+    border-radius: 3px;
+  }
+  
+  input[type="range"]::-moz-range-track {
+    width: 100%;
+    height: 6px;
+    cursor: pointer;
+    background: #e0e0e0;
+    border-radius: 3px;
+  }
+  
+  /* 复选框 */
+  input[type="checkbox"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+    background-color: white;
+    cursor: pointer;
+    vertical-align: middle;
+    position: relative;
+    transition: background-color 0.3s, border-color 0.3s;
+  }
+  
+  input[type="checkbox"]:checked {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+  }
+  
+  input[type="checkbox"]:checked::after {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 2px;
+    width: 4px;
+    height: 8px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+  
+  input[type="checkbox"]:hover {
+    border-color: #bdbdbd;
+  }
+  
+  input[type="checkbox"]:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(26, 35, 126, 0.1);
+  }
+  
+  /* tooltip */
+  .tooltip {
+    position: absolute;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    pointer-events: none;
+    z-index: 1000;
+    max-width: 300px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  
+  /* Sankey */
+  .node rect {
+    cursor: move;
+    fill-opacity: 0.9;
+    shape-rendering: crispEdges;
+    transition: fill-opacity 0.3s;
+  }
+  
+  .node text {
+    pointer-events: none;
+    text-shadow: 0 1px 0 #fff;
+    transition: opacity 0.3s;
+  }
+  
+  .link {
+    fill: none;
+    stroke-opacity: 0.5;
+    transition: stroke-opacity 0.3s, stroke-width 0.3s;
+  }
+  
+  .link:hover {
+    stroke-opacity: 0.8;
+  }
+  
+  /* 雷达图 */
+  .radar-area {
+    opacity: 0.15;
+    transition: opacity 0.3s;
+  }
+  
+  .radar-area:hover {
+    opacity: 0.3;
+  }
+  
+  .dimension-label {
+    font-size: 12px;
+    font-weight: bold;
+  }
+  
+  .axis-line {
+    stroke: #999;
+    stroke-dasharray: 4, 4;
+  }
+  
+  .axis-circle {
+    fill: none;
+    stroke: #ddd;
+  }
+  
+  /* loading动画 */
+  .loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 400px;
+  }
+  
+  .loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  /* 提示标记 */
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    font-size: 12px;
+    border-radius: 10px;
+    color: white;
+    margin-left: 5px;
+  }
+  
+  .badge-high {
+    background-color: #f44336;
+  }
+  
+  .badge-medium {
+    background-color: #ff9800;
+  }
+  
+  .badge-low {
+    background-color: #4caf50;
+  }
+  
+  /* 游客/政府用户切换 */
+  body.tourist-mode {
+    --primary-color: var(--tourist-primary);
+    --secondary-color: var(--tourist-secondary);
+    --accent-color: var(--tourist-accent);
+  }
+  
+  body.government-mode {
+    --primary-color: var(--govt-primary);
+    --secondary-color: var(--govt-secondary);
+    --accent-color: var(--govt-accent);
+  }
+  
+  /* 游客模式下 */
+  .tourist-only {
+    display: none;
+  }
+  
+  body.tourist-mode .tourist-only {
+    display: block;
+  }
+  
+  body.tourist-mode .govt-only {
+    display: none;
+  }
+  
+  /* 政府模式下 */
+  .govt-only {
+    display: block;
+  }
+  
+  body.tourist-mode .govt-only {
+    display: none;
+  }
+  
+  /* 响应式 */
+  @media (max-width: 768px) {
+    .data-table {
+      display: block;
+      overflow-x: auto;
+    }
+    
+    .data-table th, 
+    .data-table td {
+      white-space: nowrap;
+    }
+  }
+  
+  /* 打印 */
+  @media print {
+    .header, 
+    .tab-navigation, 
+    .controls-container, 
+    .footer, 
+    .play-button, 
+    .city-selection,
+    .comparison-controls,
+    .prediction-controls {
+      display: none !important;
+    }
+    
+    .tab-panel {
+      display: block !important;
+      page-break-after: always;
+    }
+    
+    .content-area {
+      padding: 0;
+    }
+    
+    .chart {
+      height: 500px !important;
+      page-break-inside: avoid;
+    }
+    
+    .dashboard, 
+    .chart-wrapper, 
+    .data-table-container {
+      box-shadow: none;
+      border: 1px solid #ddd;
+    }
+    
+    body, 
+    .app-container {
+      height: auto !important;
+      overflow: visible !important;
+    }
+  }
