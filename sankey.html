@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Sankey Diagram with D3.js</title>
+  <script src="d3.v7.min.js"></script>
+  <script src="d3-sankey.min.js"></script>
+  <script src="d3-v6-tip.js"></script>
+  <link rel="stylesheet" href="d3-tip.css">
+  <style>
+    .node rect {
+      cursor: move;
+      fill-opacity: 0.9;
+      shape-rendering: crispEdges;
+    }
+
+    .node text {
+      pointer-events: none;
+      font: 10px sans-serif;
+    }
+
+    .link {
+      fill: none;
+      stroke: #000;
+      stroke-opacity: 0.2;
+    }
+
+    .link:hover {
+      stroke-opacity: 0.5;
+    }
+  </style>
+</head>
+<body>
+  <select id="holiday-select">
+      <!-- <option value="Afghanistan">Afghanistan</option>
+      <option value="Australia">Australia</option>
+      <option value="Brazil">Brazil</option>
+      <option value="China">China</option>
+      <option value="India">India</option>
+      <option value="USA">USA</option> -->
+      <!-- Add other countries as needed -->
+  </select>
+  <svg id="sankey" width="1200" height="800"></svg>
+  <script>
+    function renderSankey(filename) {
+      d3.csv(filename).then(csvData => {
+        // Extract unique nodes from source and target
+        const nodeNames = Array.from(new Set(csvData.flatMap(d => [d.source, d.target])));
+        const nodes = nodeNames.map(name => ({ name }));
+        
+        // Convert source/target names to indices
+        const links = csvData.map(d => ({
+          source: nodeNames.indexOf(d.source),
+          target: nodeNames.indexOf(d.target),
+          value: +d.value
+        }));
+
+        const sankey = d3.sankey()
+          .nodeWidth(20)
+          .nodePadding(10) // Increase padding between nodes
+          .extent([[1, 1], [700 - 1, 400 - 6]]);
+
+        const graph = sankey({
+          nodes: nodes.map(d => Object.assign({}, d)),
+          links: links.map(d => Object.assign({}, d))
+        });
+
+        const svg = d3.select("#sankey");
+        svg.selectAll("*").remove(); // Clear previous content
+
+        svg.append("g")
+          .selectAll("path")
+          .data(graph.links)
+          .join("path")
+          .attr("class", "link")
+          .attr("d", d3.sankeyLinkHorizontal())
+          .attr("stroke-width", d => Math.max(1, d.width))
+          .attr("stroke", "#000")
+          .attr("fill", "none")
+          .attr("stroke-opacity", 0.3)
+          .on("mouseover", function () {
+            d3.select(this).attr("stroke-opacity", 0.7); // Highlight on hover
+            
+          })
+          .on("mouseout", function () {
+            d3.select(this).attr("stroke-opacity", 0.3); // Reset opacity
+          });
+
+        const node = svg.append("g")
+          .selectAll("g")
+          .data(graph.nodes)
+          .join("g")
+          .attr("transform", d => `translate(${d.x0},${d.y0})`);
+
+        node.append("rect")
+          .attr("height", d => d.y1 - d.y0)
+          .attr("width", sankey.nodeWidth())
+          .attr("fill", d => d3.schemeCategory10[d.index % 10]);
+
+        node.append("text")
+          .attr("x", d => d.x0 < 700 / 2 ? sankey.nodeWidth() + 6 : -6)
+          .attr("y", d => (d.y1 - d.y0) / 2)
+          .attr("dy", "0.35em")
+          .attr("text-anchor", d => d.x0 < 700 / 2 ? "start" : "end")
+          .text(d => d.name);
+      });
+    }
+
+    const holidays = [
+      "春节,2020-01-24,2020-01-30",
+      "春节,2021-02-11,2021-02-17",
+      "中秋节,2021-09-19,2021-09-21",
+      "国庆节,2021-10-01,2021-10-07",
+      "春节,2022-01-31,2022-02-06",
+      "中秋节,2022-09-10,2022-09-12",
+      "国庆节,2022-10-01,2022-10-07",
+      "元旦,2022-12-31,2023-01-02",
+      "春节,2023-01-21,2023-01-27",
+      "清明节,2023-04-05,2023-04-05",
+      "劳动节,2023-04-29,2023-05-03",
+      "端午节,2023-06-22,2023-06-24",
+      "国庆节,2023-09-29,2023-10-06",
+    ];
+    const holidaySelect = document.getElementById('holiday-select');
+    holidays.forEach(holiday => {
+        const option = document.createElement('option');
+        option.value = holiday;
+        option.textContent = holiday;
+        holidaySelect.appendChild(option);
+    });
+    holidaySelect.addEventListener('change', function () {
+        const selectedHoliday = this.value;
+        if (selectedHoliday) {
+          str_split = selectedHoliday.split(',');
+          filename = "data/" + str_split[1] + "_" + str_split[2] + '.csv';
+          // console.log(filename);
+          renderSankey(filename);
+        }
+    });
+    renderSankey('data/2020-01-24_2020-01-30.csv'); // Default file to load
+  </script>
+</body>
+</html>
