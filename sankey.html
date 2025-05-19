@@ -78,9 +78,35 @@
           .attr("stroke", "#000")
           .attr("fill", "none")
           .attr("stroke-opacity", 0.3)
-          .on("mouseover", function () {
+          .on("mouseover", function (event, d) {
             d3.select(this).attr("stroke-opacity", 0.7); // Highlight on hover
-            
+
+            // console.log(d);
+            // Create tooltip
+            const tooltip = d3.select("body").append("div")
+              .attr("class", "tooltip")
+              .style("position", "absolute")
+              .style("background", "#fff")
+              .style("border", "1px solid #ccc")
+              .style("padding", "10px")
+              .style("border-radius", "5px")
+              .style("box-shadow", "0 2px 5px rgba(0,0,0,0.2)")
+              .style("pointer-events", "none")
+              .style("opacity", 0);
+                
+            tooltip.html(`<strong>${d.source.name} to ${d.target.name}</strong><br>迁移指数: ${d.value.toFixed(2)}`)
+              .style("left", `${event.pageX + 10}px`)
+              .style("top", `${event.pageY + 10}px`)
+              .transition()
+              .duration(200)
+              .style("opacity", 1);
+
+            d3.select(this).on("mousemove", function (event) {
+              tooltip.style("left", `${event.pageX + 10}px`)
+              .style("top", `${event.pageY + 10}px`);
+            }).on("mouseout", function (event, d) {
+              d3.selectAll(".tooltip").remove(); // Remove tooltip
+            });
           })
           .on("mouseout", function () {
             d3.select(this).attr("stroke-opacity", 0.3); // Reset opacity
