@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>国内旅游人数发展趋势图（2005-2023）</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            font-family: "Helvetica Neue", Arial, sans-serif;
+            margin: 40px;
+            background-color: #f8f9fa;
+        }
+        .chart-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .axis-label {
+            font-size: 14px;
+            fill: #666;
+        }
+        .grid line {
+            stroke: #eee;
+            stroke-dasharray: 2;
+        }
+        .tooltip {
+            position: absolute;
+            padding: 12px;
+            background: rgba(255,255,255,0.95);
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            pointer-events: none;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+            font-size: 14px;
+        }
+        .legend-item {
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .line {
+            stroke-width: 2;
+            fill: none;
+            stroke-linejoin: round;
+        }
+        .dot {
+            stroke: white;
+            stroke-width: 1;
+            transition: r 0.2s;
+        }
+    </style>
+</head>
+<body>
+    <div class="chart-container">
+        <h1>国内旅游人数发展趋势图（2005-2023）</h1>
+        <div id="chart"></div>
+    </div>
+
+<script>
+
+const margin = { top: 30, right: 200, bottom: 50, left: 60 };
+const width = 1000 - margin.left - margin.right;
+const height = 600 - margin.top - margin.bottom;
+
+const svg = d3.select("#chart")
+    .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", `translate(${margin.left},${margin.top})`);
+
+const dataset = [
+    {year:2005, 北京市:7149.8, 天津市:3158.6, 河北省:8773.4, 山西省:4079.4, 内蒙古自治区:3523.7, 辽宁省:7260.8, 吉林省:2776.5, 黑龙江省:2715.3, 上海市:4756.4, 江苏省:9197.1, 浙江省:18121.3},
+    {year:2006, 北京市:8387, 天津市:3538.2, 河北省:10043, 山西省:4713.6, 内蒙古自治区:4161.8, 辽宁省:8390.3, 吉林省:3226.5, 黑龙江省:5329.8, 上海市:10598.9, 江苏省:21240.8, 浙江省:15302.7},
+    {year:2007, 北京市:10425.5, 天津市:4158.4, 河北省:12152.9, 山西省:5935.6, 内蒙古自治区:5166.9, 辽宁省:10292.2, 吉林省:4080.3, 黑龙江省:6126.3, 上海市:12878.7, 江苏省:25988.4, 浙江省:18640},
+    {year:2008, 北京市:11813.1, 天津市:5182.4, 河北省:14200.1, 山西省:7223, 内蒙古自治区:6242.4, 辽宁省:12137.7, 吉林省:4834.7, 黑龙江省:7134.2, 上海市:14536.9, 江苏省:30945.5, 浙江省:21284.6},
+    {year:2009, 北京市:12900.9, 天津市:5709.6, 河北省:15306.9, 山西省:7147.6, 内蒙古自治区:7104.2, 辽宁省:12815.7, 吉林省:5434.8, 黑龙江省:7218.9, 上海市:15742.4, 江苏省:34471.7, 浙江省:22833.7},
+    {year:2010, 北京市:14964, 天津市:6830.8, 河北省:18003.6, 山西省:8903.9, 内蒙古自治区:8199.9, 辽宁省:13896.3, 吉林省:6410.5, 黑龙江省:8308.3, 上海市:17915.4, 江苏省:41383.9, 浙江省:27399.9},
+    {year:2011, 北京市:17188.8, 天津市:8112.5, 河北省:21384.7, 山西省:10894.4, 内蒙古自治区:9458.1, 辽宁省:16354.9, 吉林省:7734.6, 黑龙江省:9935, 上海市:20009.7, 江苏省:48839.2, 浙江省:31854.8},
+    {year:2012, 北京市:19024.7, 天津市:9043, 河北省:23077.5, 山西省:11683.1, 内蒙古自治区:10470.1, 辽宁省:17848.6, 吉林省:8678, 黑龙江省:11015.8, 上海市:21305.6, 江苏省:53701.9, 浙江省:34382.4},
+    {year:2013, 北京市:21134.6, 天津市:9945.4, 河北省:24259.6, 山西省:11987.2, 内蒙古自治区:11392.4, 辽宁省:19208.8, 吉林省:9427.9, 黑龙江省:11849.1, 上海市:23204.1, 江苏省:59349.4, 浙江省:37334.6},
+    {year:2014, 北京市:22926, 天津市:10640.6, 河北省:25208.9, 山西省:12094.7, 内蒙古自治区:12158.2, 辽宁省:20025.7, 吉林省:9966.5, 黑龙江省:12170.8, 上海市:25269.8, 江苏省:64830.5, 浙江省:40023.5},
+    {year:2015, 北京市:24779.1, 天津市:10879.5, 河北省:26398.4, 山西省:11836.4, 内蒙古自治区:12949, 辽宁省:20210.3, 吉林省:10018, 黑龙江省:11690, 上海市:26887, 江苏省:71255.9, 浙江省:43507.7},
+    {year:2016, 北京市:27041.2, 天津市:11477.2, 河北省:28474.1, 山西省:11946.4, 内蒙古自治区:13789.3, 辽宁省:20392.5, 吉林省:10427, 黑龙江省:11895, 上海市:29887, 江苏省:77350.9, 浙江省:47254},
+    {year:2017, 北京市:29883, 天津市:12450.6, 河北省:30640.8, 山西省:14484.3, 内蒙古自治区:14898.1, 辽宁省:21693, 吉林省:10922, 黑龙江省:12313, 上海市:32925, 江苏省:85869.8, 浙江省:52403.1},
+    {year:2018, 北京市:33106, 天津市:13362.9, 河北省:32494.6, 山西省:15958.1, 内蒙古自治区:16140.8, 辽宁省:23510.5, 吉林省:11253.8, 黑龙江省:12846.5, 上海市:36011.8, 江苏省:93207.6, 浙江省:58002.8},
+    {year:2019, 北京市:35445.1, 天津市:14055.5, 河北省:34978.6, 山西省:16961.6, 内蒙古自治区:17212.5, 辽宁省:24855.3, 吉林省:11726.8, 黑龙江省:13544.4, 上海市:37987.6, 江苏省:98656.8, 浙江省:62462},
+    {year:2020, 北京市:35943.3, 天津市:14008, 河北省:36013.8, 山西省:17835.6, 内蒙古自治区:17258, 辽宁省:25011.4, 吉林省:12256, 黑龙江省:13633.4, 上海市:38963.3, 江苏省:102807, 浙江省:64689.1},
+    {year:2021, 北京市:41045.6, 天津市:15685.1, 河北省:40397.1, 山西省:22870.4, 内蒙古自治区:21166, 辽宁省:27569.5, 吉林省:13163.8, 黑龙江省:14858.2, 上海市:43653.2, 江苏省:117392.4, 浙江省:74040.8},
+    {year:2022, 北京市:41540.9, 天津市:16132.2, 河北省:41988, 山西省:25583.9, 内蒙古自治区:23388.9, 辽宁省:28826.1, 吉林省:12818.1, 黑龙江省:15831.5, 上海市:44809.1, 江苏省:122089.3, 浙江省:78060.6},
+    {year:2023, 北京市:43760.7, 天津市:16737.3, 河北省:43944.1, 山西省:25698.2, 内蒙古自治区:24627, 辽宁省:30209.4, 吉林省:13531.2, 黑龙江省:15883.9, 上海市:47218.7, 江苏省:128222.2, 浙江省:82553.2}
+];
+
+const parseYear = d => {
+    d.values = Object.entries(d)
+        .filter(([k]) => k !== "year")
+        .map(([province, value]) => ({ province, value: +value || null }));
+    d.date = new Date(d.year, 6, 1);
+    return d;
+};
+
+const processedData = dataset.map(parseYear);
+const provinces = [...new Set(processedData.flatMap(d => d.values.map(v => v.province)))];
+
+const xScale = d3.scaleTime()
+    .domain(d3.extent(processedData, d => d.date))
+    .range([0, width])
+    .nice();
+
+const yScale = d3.scaleLinear()
+    .domain([0, d3.max(processedData.flatMap(d => 
+        d.values.filter(v => v.value !== null).map(v => v.value)
+    )) * 1.05])
+    .range([height, 0])
+    .nice();
+
+const colorScale = d3.scaleOrdinal()
+    .domain(provinces)
+    .range(d3.schemeTableau10);
+
+svg.append("g")
+    .attr("transform", `translate(0,${height})`)
+    .call(d3.axisBottom(xScale)
+        .ticks(d3.timeYear.every(1))
+        .tickFormat(d3.timeFormat("%Y"))
+    )
+    .selectAll("text")
+        .style("text-anchor", "middle");
+
+svg.append("g")
+    .call(d3.axisLeft(yScale).tickSize(-width).tickFormat(d3.format("~s")))
+    .selectAll(".tick line")
+        .attr("stroke-opacity", 0.1);
+
+svg.append("g")
+    .attr("class", "grid")
+    .call(d3.axisLeft(yScale)
+        .tickSize(-width)
+        .tickFormat(""));
+
+const lineGenerator = d3.line()
+    .defined(d => d.value !== null)
+    .x(d => xScale(d.date))
+    .y(d => yScale(d.value))
+    .curve(d3.curveMonotoneX);
+
+provinces.forEach(province => {
+    const provinceData = processedData
+        .map(d => ({ date: d.date, value: d.values.find(v => v.province === province)?.value }))
+        .filter(d => d.value !== null);
+
+    const path = svg.append("path")
+        .datum(provinceData)
+        .attr("class", `line line-${province}`)
+        .style("stroke", colorScale(province))
+        .style("opacity", 0.9);
+
+    path.attr("d", lineGenerator)
+        .attr("stroke-dasharray", lineGenerator(provinceData).length + " " + lineGenerator(provinceData).length)
+        .attr("stroke-dashoffset", lineGenerator(provinceData).length);
+
+    path.transition()
+        .duration(2000)
+        .attr("stroke-dashoffset", 0);
+
+    const dots = svg.selectAll(`.dot-${province}`)
+        .data(provinceData)
+        .enter()
+        .append("circle")
+        .attr("class", `dot dot-${province}`)
+        .attr("cx", d => xScale(d.date))
+        .attr("cy", d => yScale(d.value))
+        .attr("r", 4)
+        .style("fill", colorScale(province))
+        .style("opacity", 0);
+
+    dots.transition()
+        .delay((d, i) => i * 100) 
+        .duration(500)
+        .style("opacity", 0.8);
+});
+
+const tooltip = d3.select("body").append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0);
+
+svg.selectAll(".dot")
+    .on("mouseover", function(event, d) {
+        d3.select(this).transition().attr("r", 6);
+        tooltip.transition()
+            .duration(200)
+            .style("opacity", 0.95)
+            .style("left", `${event.pageX + 15}px`)
+            .style("top", `${event.pageY - 30}px`)
+            .html(`
+                <div style="color:${colorScale(d.province)};margin-bottom:8px">
+                    █ ${d.province} (${d.date.getFullYear()})
+                </div>
+                <div>数值：${d3.format(",.2f")(d.value)} 亿元</div>
+            `);
+    })
+    .on("mouseout", function() {
+        d3.select(this).transition().attr("r", 4);
+        tooltip.transition()
+            .duration(500)
+            .style("opacity", 0);
+    });
+
+const legend = svg.append("g")
+    .attr("transform", `translate(${width + 20}, 20)`);
+
+provinces.forEach((province, i) => {
+    const legendItem = legend.append("g")
+        .attr("transform", `translate(0, ${i * 28})`)
+        .attr("class", "legend-item")
+        .style("opacity", 0.9)
+        .on("click", function() {
+            const currentOpacity = d3.select(`.line-${province}`).style("opacity");
+            d3.selectAll(`.line-${province}, .dot-${province}`)
+                .transition()
+                .style("opacity", currentOpacity === "0.9" ? 0.2 : 0.9);
+            d3.select(this).style("opacity", currentOpacity === "0.9" ? 0.4 : 0.9);
+        });
+
+    legendItem.append("rect")
+        .attr("width", 20)
+        .attr("height", 20)
+        .style("fill", colorScale(province))
+        .style("rx", 4);
+
+    legendItem.append("text")
+        .attr("x", 26)
+        .attr("y", 10)
+        .text(province)
+        .style("dominant-baseline", "middle");
+});
+
+svg.append("text")
+    .attr("transform", `translate(-50, ${height/2}) rotate(-90)`)
+    .attr("class", "axis-label")
+    .text("经济指标（亿元）");
+
+svg.append("text")
+    .attr("transform", `translate(${width/2}, ${height + 40})`)
+    .attr("class", "axis-label")
+    .text("年份");
+</script>
+</body>
+</html>

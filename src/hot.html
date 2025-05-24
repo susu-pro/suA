@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文旅企业总数词云图</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-cloud/1.2.5/d3.layout.cloud.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>文旅企业总数词云图</h1>
+        <div id="wordcloud"></div>
+    </div>
+
+    <script>
+        const width = 800;
+        const height = 600;
+
+        const svg = d3.select("#wordcloud")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height);
+
+        d3.csv("城市企业总数统计.csv").then(function(data) {
+            data.forEach(function(d) {
+                d.count = +d["企业总数"];
+            });
+
+            const topData = data.sort((a, b) => b.count - a.count).slice(0, 50);
+            const layout = d3.layout.cloud()
+                .size([width, height])
+                .words(topData.map(function(d) {
+                    return { text: d.城市, size: d.count, count: d.count };
+                }))
+                .padding(5)
+                .rotate(function() {
+                    return ~~(Math.random() * 2) * 90;
+                })
+                .fontSize(function(d) {
+                    return Math.min(Math.max(d.size / 10, 12), 80);
+                })
+                .on("end", draw);
+
+            layout.start();
+
+            function draw(words) {
+                svg.append("g")
+                    .attr("transform", `translate(${width / 2},${height / 2})`)
+                    .selectAll("text")
+                    .data(words)
+                    .enter()
+                    .append("text")
+                    .style("font-size", function(d) {
+                        return d.size + "px";
+                    })
+                    .style("font-family", "Impact")
+                    .style("fill", function(d, i) {
+                        const colors = ["#4e79a7", "#f28e2c", "#e15759", "#76b7b2", "#59a14f", "#edc949", "#af7aa1", "#ff9da7", "#9c755f", "#bab0ab"];
+                        return colors[i % colors.length];
+                    })
+                    .attr("text-anchor", "middle")
+                    .attr("transform", function(d) {
+                        return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
+                    })
+                    .text(function(d) {
+                        return d.text;
+                    })
+                    .on("mouseover", function(event, d) {
+                        let tooltipX = d.x;
+                        let tooltipY = d.y - d.size / 2 - 10;
+
+                        tooltipX = Math.max(tooltipX, 10);  
+                        tooltipX = Math.min(tooltipX, width - 10); 
+                        tooltipY = Math.max(tooltipY, 10);  
+                        tooltipY = Math.min(tooltipY, height - 10); 
+
+                        d3.select(this)
+                            .transition()
+                            .duration(200)
+                            .style("fill", "#ff5000")
+                            .style("font-size", (d.size + 5) + "px");
+                        
+                        svg.append("text")
+                            .attr("class", "tooltip")
+                            .attr("x", tooltipX)
+                            .attr("y", tooltipY)
+                            .attr("text-anchor", "middle")
+                            .attr("dominant-baseline", "middle")
+                            .style("font-size", "14px")
+                            .style("font-weight", "bold")
+                            .text(`${d.text}: ${d.count} 家企业`);
+                    })
+                    .on("mouseout", function() {
+                        d3.select(this)
+                            .transition()
+                            .duration(200)
+                            .style("fill", function(d, i) {
+                                const colors = ["#4e79a7", "#f28e2c", "#e15759", "#76b7b2", "#59a14f", "#edc949", "#af7aa1", "#ff9da7", "#9c755f", "#bab0ab"];
+                                return colors[i % colors.length];
+                            })
+                            .style("font-size", function(d) {
+                                return d.size + "px";
+                            });
+                        
+                        svg.selectAll(".tooltip").remove();
+                    });
+            }
+        }).catch(function (error) {
+            console.log("Error loading data: ", error);
+        });
+    </script>
+</body>
+</html>

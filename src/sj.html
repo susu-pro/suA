@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>国内旅游收入发展趋势图（2005-2023）</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            font-family: "Helvetica Neue", Arial, sans-serif;
+            margin: 40px;
+            background-color: #f8f9fa;
+        }
+        .chart-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .axis-label {
+            font-size: 14px;
+            fill: #666;
+        }
+        .grid line {
+            stroke: #eee;
+            stroke-dasharray: 2;
+        }
+        .tooltip {
+            position: absolute;
+            padding: 12px;
+            background: rgba(255,255,255,0.95);
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            pointer-events: none;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+            font-size: 14px;
+        }
+        .legend-item {
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .line {
+            stroke-width: 2;
+            fill: none;
+            stroke-linejoin: round;
+        }
+        .dot {
+            stroke: white;
+            stroke-width: 1;
+            transition: r 0.2s;
+        }
+    </style>
+</head>
+<body>
+    <div class="chart-container">
+        <h1>国内旅游收入发展趋势图（2005-2023）</h1>
+        <div id="chart"></div>
+    </div>
+
+<script>
+
+const margin = { top: 30, right: 200, bottom: 50, left: 60 };
+const width = 1000 - margin.left - margin.right;
+const height = 600 - margin.top - margin.bottom;
+
+const svg = d3.select("#chart")
+    .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", `translate(${margin.left},${margin.top})`);
+
+
+const dataset = [
+    {
+        year:2000,
+        上海市:775.0,
+        北京市:683.0,
+        南通市:28.24,
+        泰州市:20.46,
+        镇江市:41.93
+    },
+    {
+        year:2001,
+        上海市:805.78,
+        北京市:887.7,
+        南通市:30.0,
+        泰州市:21.84,
+        镇江市:43.05
+    },
+    {
+        year:2002,
+        上海市:993.8,
+        北京市:930.0,
+        南通市:35.18,
+        泰州市:25.96,
+        镇江市:47.48
+    },
+    {
+        year:2003,
+        上海市:1079.8,
+        北京市:706.0,
+        南通市:40.24,
+        泰州市:27.4,
+        镇江市:54.02
+    },
+    {
+        year:2004,
+        上海市:1216.34,
+        北京市:1145.0,
+        南通市:48.98,
+        泰州市:35.07,
+        镇江市:85.95
+    },
+    {
+        year:2005,
+        上海市:1308.41,
+        北京市:1300.0,
+        南通市:65.13,
+        泰州市:41.01,
+        镇江市:103.48
+    },
+    {
+        year:2006,
+        上海市:1561.2,
+        北京市:1515.0,
+        南通市:81.51,
+        泰州市:51.03,
+        镇江市:136.34
+    },
+    {
+        year:2007,
+        上海市:1861.4,
+        北京市:1710.0,
+        南通市:103.35,
+        泰州市:64.24,
+        镇江市:163.37
+    },
+    {
+        year:2008,
+        上海市:1916.6,
+        北京市:1745.0,
+        南通市:113.03,
+        泰州市:67.12,
+        镇江市:173.64
+    },
+    {
+        year:2009,
+        上海市:2134.3,
+        北京市:1820.0,
+        南通市:125.04,
+        泰州市:74.32,
+        镇江市:202.61
+    },
+    {
+        year:2010,
+        上海市:2325.2,
+        北京市:2120.0,
+        南通市:150.63,
+        泰州市:90.35,
+        镇江市:240.26
+    },
+    {
+        year:2011,
+        上海市:2704.4,
+        北京市:2515.0,
+        南通市:191.14,
+        泰州市:117.42,
+        镇江市:295.44
+    },
+    {
+        year:2012,
+        上海市:3144.1,
+        北京市:2920.0,
+        南通市:234.05,
+        泰州市:143.44,
+        镇江市:341.63
+    },
+    {
+        year:2013,
+        上海市:3516.05,
+        北京市:3310.0,
+        南通市:276.16,
+        泰州市:170.61,
+        镇江市:384.74
+    },
+    {
+        year:2014,
+        上海市:3711.46,
+        北京市:3545.0,
+        南通市:312.54,
+        泰州市:193.45,
+        镇江市:423.37
+    },
+    {
+        year:2015,
+        上海市:3861.2,
+        北京市:3710.0,
+        南通市:342.3,
+        泰州市:211.14,
+        镇江市:447.6
+    },
+    {
+        year:2016,
+        上海市:4034.13,
+        北京市:3905.0,
+        南通市:366.54,
+        泰州市:227.64,
+        镇江市:470.23
+    },
+    {
+        year:2017,
+        上海市:4237.24,
+        北京市:4115.0,
+        南通市:400.42,
+        泰州市:251.04,
+        镇江市:502.7
+    },
+    {
+        year:2018,
+        上海市:4477.15,
+        北京市:5556.17,
+        南通市:693.33,
+        泰州市:371.23,
+        镇江市:923.77
+    },
+    {
+        year:2019,
+        上海市:4789.3,
+        北京市:5866.2,
+        南通市:765.42,
+        泰州市:409.31,
+        镇江市:1012.35
+    },
+    {
+        year:2020,
+        上海市:2809.5,
+        北京市:2880.92,
+        南通市:267.0,
+        泰州市:153.01,
+        镇江市:492.2
+    },
+    {
+        year:2021,
+        上海市:3536.53,
+        北京市:4138.47,
+        南通市:614.96,
+        泰州市:290.03,
+        镇江市:774.51
+    },
+    {
+        year:2022,
+        上海市:2080.14,
+        北京市:2490.92,
+        南通市:399.78,
+        泰州市:203.13,
+        镇江市:272.16
+    },
+    {
+        year:2023,
+        上海市:3678.11,
+        北京市:5731.2,
+        南通市:791.3,
+        泰州市:375.25,
+        镇江市:508.56
+    }
+];
+
+const parseYear = d => {
+    d.values = Object.entries(d)
+        .filter(([k]) => k !== "year")
+        .map(([province, value]) => ({ "province": province, "value": +value || null }));
+    d.date = new Date(d.year, 6, 1); 
+    return d;
+};
+
+const processedData = dataset.map(parseYear);
+const provinces = [...new Set(processedData.flatMap(d => d.values.map(v => v.province)))];
+
+const xScale = d3.scaleTime()
+    .domain(d3.extent(processedData, d => d.date))
+    .range([0, width])
+    .nice();
+
+const yScale = d3.scaleLinear()
+    .domain([0, d3.max(processedData.flatMap(d => 
+        d.values.filter(v => v.value !== null).map(v => v.value)
+    )) * 1.05])
+    .range([height, 0])
+    .nice();
+
+const colorScale = d3.scaleOrdinal()
+    .domain(provinces)
+    .range(d3.schemeTableau10);
+
+svg.append("g")
+    .attr("transform", `translate(0,${height})`)
+    .call(d3.axisBottom(xScale)
+        .ticks(d3.timeYear.every(1))
+        .tickFormat(d3.timeFormat("%Y"))
+    )
+    .selectAll("text")
+        .style("text-anchor", "middle");
+
+svg.append("g")
+    .call(d3.axisLeft(yScale).tickSize(-width).tickFormat(d3.format("~s")))
+    .selectAll(".tick line")
+        .attr("stroke-opacity", 0.1);
+
+svg.append("g")
+    .attr("class", "grid")
+    .call(d3.axisLeft(yScale)
+        .tickSize(-width)
+        .tickFormat(""));
+
+const lineGenerator = d3.line()
+    .defined(d => d.value !== null)
+    .x(d => xScale(d.date))
+    .y(d => yScale(d.value))
+    .curve(d3.curveMonotoneX);
+
+provinces.forEach(province => {
+    const provinceData = processedData
+        .map(d => ({ "date": d.date, "value": d.values.find(v => v.province === province)?.value }))
+        .filter(d => d.value !== null);
+
+    svg.append("path")
+        .datum(provinceData)
+        .attr("class", `line line-${province}`)
+        .attr("d", lineGenerator)
+        .style("stroke", colorScale(province))
+        .style("opacity", 0.9);
+});
+
+const tooltip = d3.select("body").append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0);
+
+provinces.forEach(province => {
+    const provinceData = processedData
+        .map(d => ({
+            "date": d.date,
+            "value": d.values.find(v => v.province === province)?.value,
+            "province": province
+        }))
+        .filter(d => d.value !== null);
+
+    svg.selectAll(`.dot-${province}`)
+        .data(provinceData)
+        .enter()
+        .append("circle")
+        .attr("class", `dot dot-${province}`)
+        .attr("cx", d => xScale(d.date))
+        .attr("cy", d => yScale(d.value))
+        .attr("r", 4)
+        .style("fill", colorScale(province))
+        .style("opacity", 0.8)
+        .on("mouseover", function(event, d) {
+            d3.select(this).transition().attr("r", 6);
+            tooltip.transition()
+                .duration(200)
+                .style("opacity", 0.95)
+                .style("left", `${event.pageX + 15}px`)
+                .style("top", `${event.pageY - 30}px`)
+                .html(`
+                    <div style="color:${colorScale(d.province)};margin-bottom:8px">
+                        █ ${d.province} (${d.date.getFullYear()})
+                    </div>
+                    <div>数值：${d3.format(",.2f")(d.value)} 亿元</div>
+                `);
+        })
+        .on("mouseout", function() {
+            d3.select(this).transition().attr("r", 4);
+            tooltip.transition()
+                .duration(500)
+                .style("opacity", 0);
+        });
+});
+
+const legend = svg.append("g")
+    .attr("transform", `translate(${width + 20}, 20)`);
+
+provinces.forEach((province, i) => {
+    const legendItem = legend.append("g")
+        .attr("transform", `translate(0, ${i * 28})`)
+        .attr("class", "legend-item")
+        .style("opacity", 0.9)
+        .on("click", function() {
+            const currentOpacity = d3.select(`.line-${province}`).style("opacity");
+            d3.selectAll(`.line-${province}, .dot-${province}`)
+                .transition()
+                .style("opacity", currentOpacity === "0.9" ? 0.2 : 0.9);
+            d3.select(this).style("opacity", currentOpacity === "0.9" ? 0.4 : 0.9);
+        });
+
+    legendItem.append("rect")
+        .attr("width", 20)
+        .attr("height", 20)
+        .style("fill", colorScale(province))
+        .style("rx", 4);
+
+    legendItem.append("text")
+        .attr("x", 26)
+        .attr("y", 10)
+        .text(province)
+        .style("dominant-baseline", "middle");
+});
+
+svg.append("text")
+    .attr("transform", `translate(-50, ${height/2}) rotate(-90)`)
+    .attr("class", "axis-label")
+    .text("经济指标（亿元）");
+
+svg.append("text")
+    .attr("transform", `translate(${width/2}, ${height + 40})`)
+    .attr("class", "axis-label")
+    .text("年份");
+</script>
+</body>
+</html>

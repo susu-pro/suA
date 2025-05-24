@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>城市企业总数排名前20</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .d3-chart {
+            margin-top: 40px;
+        }
+        
+        .bar {
+            fill: #1f77b4;
+            transition: fill 0.3s;
+        }
+        
+        .bar:hover {
+            fill: #ff7f0e;
+        }
+        
+        .dot {
+            fill: #ffbb78;
+            stroke: #fff;
+            stroke-width: 2px;
+        }
+        
+        .dot:hover {
+            fill: #2ca02c;
+        }
+        
+        .axis-label {
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        .city-label {
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .tooltip {
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        /* 添加图例样式 */
+        .legend {
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>数字文旅企业总数排名Top20城市</h1>
+        <div class="d3-chart"></div>
+    </div>
+
+    <script>
+        const margin = { top: 30, right: 150, bottom: 70, left: 150 };
+        const width = 900 - margin.left - margin.right;
+        const height = 500 - margin.top - margin.bottom;
+
+        const svg = d3.select(".d3-chart")
+            .append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", `translate(${margin.left},${margin.top})`);
+
+        d3.csv("城市企业总数统计.csv").then(function(data) {
+            data.forEach(function(d) {
+                d.count = +d["企业总数"];
+            });
+            const top20Data = data.sort((a, b) => b.count - a.count).slice(0, 20);
+
+            const x = d3.scaleLinear()
+                .domain([0, d3.max(top20Data, d => d.count)])
+                .range([0, width]);
+
+            const y = d3.scaleBand()
+                .domain(top20Data.map(d => d.城市))
+                .range([0, height])
+                .padding(0.3);
+
+            const colorScale = d3.scaleLinear()
+                .domain([0, d3.max(top20Data, d => d.count)])
+                .range(["#1f77b4", "#ff7f0e"]);
+
+            svg.append("g")
+                .attr("transform", `translate(0,${height})`)
+                .call(d3.axisBottom(x).ticks(8).tickFormat(d => d))
+                .selectAll("text")
+                .style("font-size", "12px");
+
+            svg.append("text")
+                .attr("class", "axis-label")
+                .attr("text-anchor", "middle")
+                .attr("x", width / 2)
+                .attr("y", height + margin.bottom - 10)
+                .text("企业数量");
+
+            svg.append("g")
+                .call(d3.axisLeft(y))
+                .selectAll("text")
+                .style("font-size", "12px");
+
+            svg.selectAll(".line")
+                .data(top20Data)
+                .enter()
+                .append("line")
+                .attr("class", "line")
+                .attr("x1", 0)
+                .attr("y1", d => y(d.城市) + y.bandwidth() / 2)
+                .attr("x2", 0)
+                .attr("y2", d => y(d.城市) + y.bandwidth() / 2)
+                .attr("stroke", d => colorScale(d.count)) 
+                .attr("stroke-width", 3) 
+                .attr("stroke-opacity", 0.7)
+                .transition()
+                .delay((d, i) => i * 200)
+                .duration(800)
+                .attr("x2", d => x(d.count));
+
+            svg.selectAll(".dot")
+                .data(top20Data)
+                .enter()
+                .append("circle")
+                .attr("class", "dot")
+                .attr("cx", 0)
+                .attr("cy", d => y(d.城市) + y.bandwidth() / 2)
+                .attr("r", 5)
+                .style("fill", d => colorScale(d.count))  
+                .style("stroke", "#fff")
+                .style("stroke-width", 2)
+                .on("mouseover", function(event, d) {
+                    d3.select(this)
+                        .transition()
+                        .duration(200)
+                        .attr("r", 10)
+                        .style("fill", "#ff7f0e");
+                    
+                    svg.append("text")
+                        .attr("class", "tooltip")
+                        .attr("x", x(d.count) + 15)
+                        .attr("y", y(d.城市) + y.bandwidth() / 2)
+                        .attr("text-anchor", "start")
+                        .attr("dominant-baseline", "middle")
+                        .style("font-size", "14px")
+                        .style("font-weight", "bold")
+                        .style("fill", "#333")
+                        .text(`${d.城市}: ${d.count} 家企业`);
+                })
+                .on("mouseout", function() {
+                    d3.select(this)
+                        .transition()
+                        .duration(200)
+                        .attr("r", 5)
+                        .style("fill", d => colorScale(d.count));
+                    
+                    svg.selectAll(".tooltip").remove();
+                })
+                .transition()
+                .delay((d, i) => i * 200)
+                .duration(800)
+                .attr("cx", d => x(d.count));
+
+            svg.selectAll(".city-label")
+                .data(top20Data)
+                .enter()
+                .append("text")
+                .attr("class", "city-label")
+                .attr("x", -10)
+                .attr("y", d => y(d.城市) + y.bandwidth() / 2)
+                .attr("dy", "0.35em")
+                .style("text-anchor", "end")
+                .style("font-size", "14px")
+                .style("font-weight", "bold")
+                .text(d => d.城市);
+
+            const legendData = [
+                { color: "#1f77b4", label: "企业数量较少" },
+                { color: "#ff7f0e", label: "企业数量较多" }
+            ];
+
+            const legend = svg.append("g")
+                .attr("class", "legend")
+                .attr("transform", `translate(${width - 100}, -30)`);
+
+            legendData.forEach((d, i) => {
+                legend.append("rect")
+                    .attr("x", 0)
+                    .attr("y", i * 20)
+                    .attr("width", 15)
+                    .attr("height", 15)
+                    .style("fill", d.color);
+
+                legend.append("text")
+                    .attr("x", 20)
+                    .attr("y", i * 20 + 12)
+                    .style("font-size", "12px")
+                    .text(d.label);
+            });
+        }).catch(function (error) {
+            console.log("Error loading data: ", error);
+        });
+    </script>
+</body>
+</html>
